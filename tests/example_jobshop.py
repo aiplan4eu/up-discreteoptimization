@@ -1,6 +1,4 @@
 from typing import List
-
-import unified_planning.test.scheduling.examples
 from unified_planning.model.scheduling import *
 from unified_planning.shortcuts import *
 
@@ -24,7 +22,7 @@ Machines
 """
 
 
-def parse(instance: str, instance_name: str):
+def parse(instance: str, instance_name: str, add_operators: bool = True):
     """Parses a job instance and return the corresponding JobShop with 3 operators instance."""
     lines = instance.splitlines()
 
@@ -58,8 +56,10 @@ def parse(instance: str, instance_name: str):
 
     # use the jobshop with operators extension: each activity requires an operator
     # for its duration
-    # num_operators = 0
-    # operators = problem.add_resource("operators", capacity=num_operators)
+    operators = None
+    if add_operators:
+        num_operators = 3
+        operators = problem.add_resource("operators", capacity=num_operators)
 
     for j in range(num_jobs):
         prev_in_job: Optional[Activity] = None
@@ -68,14 +68,17 @@ def parse(instance: str, instance_name: str):
             act = problem.add_activity(f"t_{j}_{t}", duration=times[j][t])
             machine = machine_objects[machines[j][t] - 1]
             act.uses(machine)
-            # act.uses(operators, amount=1)
-
+            if add_operators:
+                act.uses(operators, amount=1)
             if prev_in_job is not None:
                 act.add_constraint(LE(prev_in_job.end, act.start))
             prev_in_job = act
 
     problem.add_quality_metric(unified_planning.model.metrics.MinimizeMakespan())
     return problem
+
+
+de
 
 
 if __name__ == "__main__":

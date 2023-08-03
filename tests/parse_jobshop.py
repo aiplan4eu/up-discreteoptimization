@@ -2,11 +2,9 @@
 # https://github.com/tamy0612/JSPLIB. We provide one example file in the repo : ta59
 
 from typing import List, Dict, Optional
-from discrete_optimization.rcpsp.rcpsp_parser import parse_file, RCPSPModel
-from discrete_optimization.rcpsp.rcpsp_utils import create_fake_tasks
 import os
 from unified_planning.model.scheduling import SchedulingProblem, Activity
-from unified_planning.shortcuts import LT, Equals
+from unified_planning.shortcuts import LT
 import logging
 logger = logging.getLogger(__name__)
 this_folder = os.path.dirname(os.path.abspath(__file__))
