@@ -1,11 +1,13 @@
 # Basic parser of JSPLib instance, that you can find here.
 # https://github.com/tamy0612/JSPLIB. We provide one example file in the repo : ta59
 
-from typing import List, Dict, Optional
-import os
-from unified_planning.model.scheduling import SchedulingProblem, Activity
-from unified_planning.shortcuts import LT, LE
 import logging
+import os
+from typing import Dict, List, Optional
+
+from unified_planning.model.scheduling import Activity, SchedulingProblem
+from unified_planning.shortcuts import LE, LT
+
 logger = logging.getLogger(__name__)
 this_folder = os.path.dirname(os.path.abspath(__file__))
 default_file = os.path.join(this_folder, "ta59")
@@ -27,32 +29,48 @@ def parse_jsplib(filename: Optional[str] = None):
                     nb_jobs = int(split_line[0])
                     n_machines = int(split_line[1])
                 else:
-                    job = [{"machine_id": int(split_line[i]),
-                            "processing_time": int(split_line[i+1])} for i in range(0, len(split_line), 2)]
+                    job = [
+                        {
+                            "machine_id": int(split_line[i]),
+                            "processing_time": int(split_line[i + 1]),
+                        }
+                        for i in range(0, len(split_line), 2)
+                    ]
                     job_shop_problem.append(job)
                 processed_line += 1
     assert len(job_shop_problem) == nb_jobs
-    all_machines = set([x["machine_id"] for i in range(nb_jobs) for x in job_shop_problem[i]])
+    all_machines = set(
+        [x["machine_id"] for i in range(nb_jobs) for x in job_shop_problem[i]]
+    )
     assert len(all_machines) == n_machines
     problem = SchedulingProblem("Jobshop-example")
     machines_dict = {}
     for machine in all_machines:
-        machines_dict[machine] = problem.add_resource(name=f"machine_{machine}",
-                                                      capacity=1)
+        machines_dict[machine] = problem.add_resource(
+            name=f"machine_{machine}", capacity=1
+        )
     activities: Dict[int, List[Activity]] = {}
     for index_job in range(nb_jobs):
         activities[index_job] = []
         for index_subjob in range(len(job_shop_problem[index_job])):
             activities[index_job].append(
-                problem.add_activity(f"job_{index_job}_sub_{index_subjob}",
-                                     duration=job_shop_problem[index_job][index_subjob]["processing_time"])
+                problem.add_activity(
+                    f"job_{index_job}_sub_{index_subjob}",
+                    duration=job_shop_problem[index_job][index_subjob][
+                        "processing_time"
+                    ],
+                )
             )
-            activities[index_job][-1].uses(resource=machines_dict[job_shop_problem[index_job]
-                                                                  [index_subjob]["machine_id"]],
-                                           amount=1)
+            activities[index_job][-1].uses(
+                resource=machines_dict[
+                    job_shop_problem[index_job][index_subjob]["machine_id"]
+                ],
+                amount=1,
+            )
             if index_subjob >= 1:
-                problem.add_constraint(LE(activities[index_job][-2].end,
-                                          activities[index_job][-1].start))  # Subjobs have precedence relations.
+                problem.add_constraint(
+                    LE(activities[index_job][-2].end, activities[index_job][-1].start)
+                )  # Subjobs have precedence relations.
     logger.info(f"Scheduling problem (job shop) instanciated, {problem}")
     return problem
 

@@ -1,4 +1,5 @@
 from typing import List
+
 from unified_planning.model.scheduling import *
 from unified_planning.shortcuts import *
 
@@ -77,8 +78,6 @@ def parse(instance: str, instance_name: str, add_operators: bool = True):
 
     problem.add_quality_metric(unified_planning.model.metrics.MinimizeMakespan())
     return problem
-
-
 
 
 if __name__ == "__main__":

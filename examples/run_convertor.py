@@ -1,27 +1,39 @@
 import os
+
 os.environ["DO_SKIP_MZN_CHECK"] = "1"
 import logging
+
 import unified_planning.engines
+from discrete_optimization.generic_rcpsp_tools.gphh_solver import GPHH, ParametersGPHH
 from discrete_optimization.generic_tools.ea.ga_tools import ParametersGa
 from discrete_optimization.rcpsp.rcpsp_solvers import (
+    CP_MRCPSP_MZN,
     CP_RCPSP_MZN,
+    CPM,
+    LNS_CP_RCPSP_SOLVER,
+    LNS_LP_RCPSP_SOLVER,
     LP_RCPSP,
+    CPSolverName,
+    GA_RCPSP_Solver,
+    LargeNeighborhoodSearchRCPSP,
+    LargeNeighborhoodSearchScheduling,
     LS_RCPSP_Solver,
-    CPSolverName, CPM, LargeNeighborhoodSearchScheduling,
-    LargeNeighborhoodSearchRCPSP, LNS_LP_RCPSP_SOLVER, LNS_CP_RCPSP_SOLVER, ParametersCP,
-    PileSolverRCPSP, PileSolverRCPSP_Calendar, GA_RCPSP_Solver, CP_MRCPSP_MZN
+    ParametersCP,
+    PileSolverRCPSP,
+    PileSolverRCPSP_Calendar,
 )
 from discrete_optimization.rcpsp.rcpsp_utils import (
     plot_ressource_view,
     plot_task_gantt,
     plt,
 )
-from discrete_optimization.generic_rcpsp_tools.gphh_solver import GPHH, ParametersGPHH
 from example_jobshop import FT06, parse
+
+from examples.parse_jobshop import parse_jsplib
+from examples.parse_rcpsp import parse_rcpsp_to_up
 from up_discreteoptimization.convert_problem import ConvertToDiscreteOptim, RCPSPModel
 from up_discreteoptimization.engine_do import EngineDiscreteOptimization
-from examples.parse_rcpsp import parse_rcpsp_to_up
-from examples.parse_jobshop import parse_jsplib
+
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 

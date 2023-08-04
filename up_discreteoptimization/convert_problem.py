@@ -1,11 +1,22 @@
 import logging
-from typing import Dict, List, Tuple, Any, Optional
+from typing import Any, Dict, List, Optional, Tuple
+
 import numpy as np
 import unified_planning as up
 from discrete_optimization.rcpsp.rcpsp_model import RCPSPModel, RCPSPSolution
-from unified_planning.model import Effect, EffectKind, FNode, Timepoint, Timing, OperatorKind, Fluent
-from unified_planning.model.scheduling.scheduling_problem import Activity
-from unified_planning.model.scheduling.scheduling_problem import SchedulingProblem
+from unified_planning.model import (
+    Effect,
+    EffectKind,
+    Fluent,
+    FNode,
+    OperatorKind,
+    Timepoint,
+    Timing,
+)
+from unified_planning.model.scheduling.scheduling_problem import (
+    Activity,
+    SchedulingProblem,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -43,17 +54,24 @@ class ConvertToDiscreteOptim:
                 if effect.kind == EffectKind.DECREASE:
                     # assert effect.value.is_constant()
                     # assert effect.value.constant_value()
-                    calendar_resource[name_fluent][time.delay:] -= effect.value.constant_value()
+                    calendar_resource[name_fluent][
+                        time.delay :
+                    ] -= effect.value.constant_value()
                 if effect.kind == EffectKind.INCREASE:
-                    calendar_resource[name_fluent][time.delay:] += effect.value.constant_value()
+                    calendar_resource[name_fluent][
+                        time.delay :
+                    ] += effect.value.constant_value()
 
         # DEFINE Tasks data
         from unified_planning.model import Parameter
+
         set_name_activities = set()
         activities: List[Activity] = self.problem.activities
         start_var_to_activity: Dict[Timepoint, Activity] = {}
         end_var_to_activity: Dict[Timepoint, Activity] = {}
-        mode_details: Dict[str, Dict[int, Dict[str, int]]] = {}  # {Task name: {mode: {"duration": , "resource"...}}
+        mode_details: Dict[
+            str, Dict[int, Dict[str, int]]
+        ] = {}  # {Task name: {mode: {"duration": , "resource"...}}
         for activity in activities:
             name_activity = activity.name
             mode_details[name_activity] = {1: {}}
@@ -61,7 +79,9 @@ class ConvertToDiscreteOptim:
             duration_lower = activity.duration.lower.constant_value()
             assert duration_lower == duration_upper
             mode_details[name_activity][1]["duration"] = int(duration_lower)
-            effects_var: Dict["up.model.timing.Timing", List["up.model.effect.Effect"]] = activity.effects
+            effects_var: Dict[
+                "up.model.timing.Timing", List["up.model.effect.Effect"]
+            ] = activity.effects
             for timing in effects_var:
                 if timing.timepoint == activity.start and timing.delay == 0:
                     # Starting effect
@@ -76,14 +96,19 @@ class ConvertToDiscreteOptim:
             start_var_to_activity[activity.start] = activity
             end_var_to_activity[activity.end] = activity
 
-        all_constraints: List[Tuple[FNode, Optional[Activity]]] = self.problem.all_constraints()
+        all_constraints: List[
+            Tuple[FNode, Optional[Activity]]
+        ] = self.problem.all_constraints()
         # Defines precedence constraints.
         successors = {task: [] for task in set_name_activities}
         for constraint in all_constraints:
             fnode = constraint[0]
             if len(fnode.args) == 2 and fnode.node_type == OperatorKind.LE:
                 # Is probably a classical precedence constraint.
-                if fnode.args[1].timing().delay == 0 and fnode.args[0].timing().delay == 0:
+                if (
+                    fnode.args[1].timing().delay == 0
+                    and fnode.args[0].timing().delay == 0
+                ):
                     arg0 = fnode.args[0].timing().timepoint
                     arg1 = fnode.args[1].timing().timepoint
                     if arg0 in end_var_to_activity and arg1 in start_var_to_activity:
