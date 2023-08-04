@@ -51,9 +51,10 @@ def parse(instance: str, instance_name: str, add_operators: bool = True):
         f"sched:jobshop-{instance_name}"
     )
     machine_objects = [
-        problem.add_resource(f"m{i}") for i in range(1, num_machines + 1)
+        problem.add_resource(f"m{i}", capacity=1) for i in range(1, num_machines + 1)
     ]
-
+    problem.add_decrease_effect(0, machine_objects[0], 1)
+    problem.add_increase_effect(10, machine_objects[0], 1)
     # use the jobshop with operators extension: each activity requires an operator
     # for its duration
     operators = None
@@ -78,7 +79,6 @@ def parse(instance: str, instance_name: str, add_operators: bool = True):
     return problem
 
 
-de
 
 
 if __name__ == "__main__":

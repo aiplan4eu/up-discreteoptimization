@@ -4,7 +4,7 @@ from discrete_optimization.rcpsp.rcpsp_utils import create_fake_tasks
 import os
 
 from unified_planning.model.scheduling import SchedulingProblem
-from unified_planning.shortcuts import LT, Equals
+from unified_planning.shortcuts import Equals, LE
 import logging
 logger = logging.getLogger(__name__)
 this_folder = os.path.dirname(os.path.abspath(__file__))
@@ -37,7 +37,7 @@ def from_do_to_up(rcpsp_problem: RCPSPModel) -> SchedulingProblem:
     # Precedence constraints (classical)
     for activity in rcpsp_problem.successors:
         for next_activity in rcpsp_problem.successors[activity]:
-            problem.add_constraint(LT(activities[activity].end, activities[next_activity].start))
+            problem.add_constraint(LE(activities[activity].end, activities[next_activity].start))
     # "Special constraints"
     # - Deadline/Release constraints.
     # - some generalized precedence constraints.
@@ -55,12 +55,12 @@ def from_do_to_up(rcpsp_problem: RCPSPModel) -> SchedulingProblem:
         for ac1, ac2 in rcpsp_problem.special_constraints.start_at_end:
             problem.add_constraint(Equals(activities[ac1].end, activities[ac2].start))
         for ac1, ac2, lag in rcpsp_problem.special_constraints.start_at_end_plus_offset:
-            problem.add_constraint(LT(activities[ac1].end+lag, activities[ac2].start))
+            problem.add_constraint(LE(activities[ac1].end+lag, activities[ac2].start))
         for ac1, ac2, lag in rcpsp_problem.special_constraints.start_after_nunit:
-            problem.add_constraint(LT(activities[ac1].start+lag, activities[ac2].start))
+            problem.add_constraint(LE(activities[ac1].start+lag, activities[ac2].start))
 
     # Calendar on resource. We use one function coded in do library that was creating fake "tasks"
-    # consuming resource during some time window. It is equivalent to increase/decrease
+    # consuming resource during some time window. It is equivalent to increase/decrease effects
     resource_consumption_data: List[Dict[str, int]] = create_fake_tasks(rcpsp_problem=rcpsp_problem)
     for record in resource_consumption_data:
         resource = next((k for k in record if k in resources), None)

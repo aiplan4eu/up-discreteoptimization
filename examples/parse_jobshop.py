@@ -4,7 +4,7 @@
 from typing import List, Dict, Optional
 import os
 from unified_planning.model.scheduling import SchedulingProblem, Activity
-from unified_planning.shortcuts import LT
+from unified_planning.shortcuts import LT, LE
 import logging
 logger = logging.getLogger(__name__)
 this_folder = os.path.dirname(os.path.abspath(__file__))
@@ -51,7 +51,7 @@ def parse_jsplib(filename: Optional[str] = None):
                                                                   [index_subjob]["machine_id"]],
                                            amount=1)
             if index_subjob >= 1:
-                problem.add_constraint(LT(activities[index_job][-2].end,
+                problem.add_constraint(LE(activities[index_job][-2].end,
                                           activities[index_job][-1].start))  # Subjobs have precedence relations.
     logger.info(f"Scheduling problem (job shop) instanciated, {problem}")
     return problem
